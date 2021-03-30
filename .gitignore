@@ -1,0 +1,13 @@
+.java-version
+.DS_Store
+build/
+.gradle/
+.idea/
+*.iml
+target/
+out/
+**/*.log
+/logs/
+classes
+bin/
+.scannerwork
