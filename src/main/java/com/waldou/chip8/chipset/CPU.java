@@ -5,6 +5,9 @@ import com.waldou.chip8.OpcodeConstants;
 import java.util.Random;
 
 public class CPU {
+    private static final long ONE_SECOND_IN_NANOS = 1_000_000_000;
+    private static final long OPCODES_PER_SECOND = 60;
+    private static final long OPCODES_SLICE = ONE_SECOND_IN_NANOS / OPCODES_PER_SECOND;
     private static final int GENERAL_PURPOSE_REGISTERS = 16;
     private static final int CALL_STACK_SIZE = 16;
     private static final char UNSIGNED_BYTE_MAX_VALUE = (char) 0xFF;
@@ -38,17 +41,28 @@ public class CPU {
     }
 
     /**
-     * Throttle CPU speed.
+     * Throttle CPU speed. This will sleep the thread for the approximate time it should
+     * so it can roughly emulate the CPU speed.
      */
-    private void handleClockSpeed(long deltaTime) {
-        // TODO slow things down
+    private void handleClockSpeed(long deltaTime) throws InterruptedException {
+        if (OPCODES_SLICE > deltaTime) {
+            long diffTime = OPCODES_SLICE - deltaTime;
+            long diffTimeInMillis = (OPCODES_SLICE - deltaTime) / 1_000_000;
+            long targetTime = System.nanoTime() + diffTime;
+            while (System.nanoTime() < targetTime) {
+                //
+                Thread.sleep(diffTimeInMillis);
+                diffTimeInMillis = 0;
+            }
+        }
     }
 
     /**
      * Executes full CPU cycle.
+     *
      * @param deltaTime
      */
-    public void cycle(long deltaTime) {
+    public void cycle(long deltaTime) throws InterruptedException {
         handleClockSpeed(deltaTime);
 
         short opcode = ram.readOpcode(programCounter);

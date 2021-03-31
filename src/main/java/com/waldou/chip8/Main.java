@@ -8,15 +8,14 @@ import com.waldou.chip8.chipset.RAM;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         new Main().start(args[0]);
     }
 
-    private void start(String filename) throws IOException {
+    private void start(String filename) throws IOException, InterruptedException {
         byte[] program = readFile(filename);
 
         RAM ram = new RAM(program);
