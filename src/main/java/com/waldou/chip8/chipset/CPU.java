@@ -1,16 +1,18 @@
 package com.waldou.chip8.chipset;
 
-import com.waldou.chip8.OpcodeConstants;
+import com.waldou.chip8.Main;
 
 import java.util.Random;
 
+import static com.waldou.chip8.chipset.OpcodeConstants.*;
+
 public class CPU {
     private static final long ONE_SECOND_IN_NANOS = 1_000_000_000;
-    private static final long OPCODES_PER_SECOND = 60;
+    private static final long OPCODES_PER_SECOND = 480;
     private static final long OPCODES_SLICE = ONE_SECOND_IN_NANOS / OPCODES_PER_SECOND;
     private static final int GENERAL_PURPOSE_REGISTERS = 16;
     private static final int CALL_STACK_SIZE = 16;
-    private static final char UNSIGNED_BYTE_MAX_VALUE = (char) 0xFF;
+    private static final short UNSIGNED_BYTE_MAX_VALUE = 255;
 
     private byte[] V;
     private short I;
@@ -50,7 +52,6 @@ public class CPU {
             long diffTimeInMillis = (OPCODES_SLICE - deltaTime) / 1_000_000;
             long targetTime = System.nanoTime() + diffTime;
             while (System.nanoTime() < targetTime) {
-                //
                 Thread.sleep(diffTimeInMillis);
                 diffTimeInMillis = 0;
             }
@@ -73,42 +74,44 @@ public class CPU {
     }
 
     private void execute(short opcode) {
-        System.out.println("Executing opcode: " + String.format("0x%04X", opcode));
+        if (Main.DEBUG) {
+            System.out.println("Executing opcode: " + String.format("0x%04X", opcode));
+        }
         short type = getOpcodeType(opcode);
         switch (type) {
-            case OpcodeConstants.TYPE_ZERO: {
-                if (OpcodeConstants.OPCODE_CLEAR_SCREEN == opcode) {
+            case TYPE_ZERO: {
+                if (OPCODE_CLEAR_SCREEN == opcode) {
                     graphics.clearScreen();
-                } else if (OpcodeConstants.OPCODE_RETURN == opcode) {
-                    programCounter = callStack[stackPointer--];
+                } else if (OPCODE_RETURN == opcode) {
+                    programCounter = callStack[--stackPointer];
                 }
                 break;
             }
-            case OpcodeConstants.TYPE_ONE:
-                programCounter = (short) (opcode & OpcodeConstants.OPERANDS_MASK);
+            case TYPE_ONE:
+                programCounter = (short) (opcode & ALL_OPERANDS_MASK);
                 break;
-            case OpcodeConstants.TYPE_TWO: {
+            case TYPE_TWO: {
                 callStack[stackPointer++] = programCounter;
-                programCounter = (short) (opcode & OpcodeConstants.OPERANDS_MASK);
+                programCounter = (short) (opcode & ALL_OPERANDS_MASK);
                 break;
             }
-            case OpcodeConstants.TYPE_THREE: {
+            case TYPE_THREE: {
                 short vId = getVIdX(opcode);
-                byte value = (byte) (opcode & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
+                byte value = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
                 if (V[vId] == value) {
                     programCounter += 0x0002;
                 }
                 break;
             }
-            case OpcodeConstants.TYPE_FOUR: {
+            case TYPE_FOUR: {
                 short vId = getVIdX(opcode);
-                byte value = (byte) (opcode & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
+                byte value = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
                 if (V[vId] != value) {
                     programCounter += 0x0002;
                 }
                 break;
             }
-            case OpcodeConstants.TYPE_FIVE: {
+            case TYPE_FIVE: {
                 short vIdX = getVIdX(opcode);
                 short vIdY = getVIdY(opcode);
                 if (V[vIdX] == V[vIdY]) {
@@ -116,81 +119,71 @@ public class CPU {
                 }
                 break;
             }
-            case OpcodeConstants.TYPE_SIX: {
+            case TYPE_SIX: {
                 short vId = getVIdX(opcode);
-                byte operands = (byte) (opcode & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
+                byte operands = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
                 V[vId] = operands;
                 break;
             }
-            case OpcodeConstants.TYPE_SEVEN: {
+            case TYPE_SEVEN: {
                 short vId = getVIdX(opcode);
-                byte operands = (byte) (opcode & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
-                short temp = (short) (V[vId] & 0xff);
+                byte operands = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
+                short temp = V[vId];
                 temp += operands;
-                V[vId] = (byte) (temp & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
+                V[vId] = (byte) (temp & LAST_TWO_OPERANDS_MASK);
                 break;
             }
-            case OpcodeConstants.TYPE_EIGHT: {
+            case TYPE_EIGHT: {
                 executeOperationsTypeEight(opcode);
                 break;
             }
-            case OpcodeConstants.TYPE_NINE: {
+            case TYPE_NINE: {
                 short vIdX = getVIdX(opcode);
                 short vIdY = getVIdY(opcode);
                 programCounter += (short) ((V[vIdX] != V[vIdY]) ? 0x0002 : 0);
                 break;
             }
-            case OpcodeConstants.TYPE_A: {
-                I = (short) (opcode & OpcodeConstants.OPERANDS_MASK);
+            case TYPE_A: {
+                I = (short) (opcode & ALL_OPERANDS_MASK);
                 break;
             }
-            case OpcodeConstants.TYPE_B: {
-                short operand = (short) (opcode & OpcodeConstants.OPERANDS_MASK);
+            case TYPE_B: {
+                short operand = (short) (opcode & ALL_OPERANDS_MASK);
                 programCounter = (short) (V[0] + operand);
                 break;
             }
-            case OpcodeConstants.TYPE_C: {
+            case TYPE_C: {
                 short vId = getVIdX(opcode);
                 byte random = (byte) rng.nextInt(UNSIGNED_BYTE_MAX_VALUE);
-                byte operands = (byte) (opcode & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
+                byte operands = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
 
                 V[vId] = (byte) (random & operands);
                 break;
             }
-            case OpcodeConstants.TYPE_D: {
-                // FIXME make prettier, give responsibility to graphics controller
-                short vIdX = getVIdX(opcode);
-                short vIdY = getVIdY(opcode);
-                short x = V[vIdX];
-                short y = V[vIdY];
-                short height = (short) (opcode & OpcodeConstants.THIRD_OPERAND_MASK);
-                byte bytes;
-                int readBytes = 0;
-
+            case TYPE_D: {
+                short x = V[getVIdX(opcode)];
+                short y = V[getVIdY(opcode)];
+                short height = (short) (opcode & THIRD_OPERAND_MASK);
                 V[0xF] = 0;
-                while (readBytes < height) {
-                    bytes = ram.readByte((short) (I + readBytes));
-                    for (int i = 0; i < 8; i++) {
-                        int finalX = (x + i) % graphics.getScreenWidth();
-                        int finalY = (y + readBytes) % graphics.getScreenHeight();
-
-                        boolean prevPixel = graphics.getScreen()[finalX][finalY];
-                        boolean newPixel = prevPixel ^ isBitSet(bytes, 7 - i);
-
-                        graphics.getScreen()[finalX][finalY] = newPixel;
-
-                        if (prevPixel && !newPixel) {
-                            V[0xF] = 1;
-                        }
+                for (int row = 0; row < height; row++) {
+                    byte bytes = ram.readByte((short) (I + row));
+                    boolean flippedPixel = graphics.drawLine(x, y, row, bytes);
+                    if (flippedPixel) {
+                        V[0xF] = 1;
                     }
-                    readBytes++;
                 }
                 break;
             }
-            case OpcodeConstants.TYPE_E:
-                // TODO handle key presses
+            case TYPE_E:
+                byte key = V[getVIdX(opcode)];
+                short keyEvent = (short) (opcode & LAST_TWO_OPERANDS_MASK);
+                if (KEY_EVENT_PRESSED == keyEvent) {
+                    programCounter += (short) ((input.isKeyPressed(key)) ? 0x0002 : 0);
+                } else if (KEY_EVENT_NOT_PRESSED == keyEvent) {
+                    programCounter += (short) ((!input.isKeyPressed(key)) ? 0x0002 : 0);
+                }
                 break;
-            case OpcodeConstants.TYPE_F:
+            case TYPE_F:
                 executeOperationsTypeF(opcode);
                 break;
             default:
@@ -198,14 +191,11 @@ public class CPU {
         }
     }
 
-    private boolean isBitSet(byte bytes, int mask) {
-        return (bytes & (1 << mask)) != 0;
-    }
 
     private void executeOperationsTypeEight(short opcode) {
         short vIdX = getVIdX(opcode);
         short vIdY = getVIdY(opcode);
-        short type = (short) (opcode & OpcodeConstants.THIRD_OPERAND_MASK);
+        short type = (short) (opcode & THIRD_OPERAND_MASK);
         switch (type) {
             case 0x0: {
                 V[vIdX] = V[vIdY];
@@ -224,11 +214,11 @@ public class CPU {
                 break;
             }
             case 0x4: {
-                short tempX = V[vIdX];
-                short tempY = V[vIdY];
-                tempX += tempY;
-                V[0xF] = (byte) ((tempX > UNSIGNED_BYTE_MAX_VALUE) ? 1 : 0);
-                V[vIdX] = (byte) (tempX & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
+                short tempX = (short) (V[vIdX] & 0xFF);
+                short tempY = (short) (V[vIdY] & 0xFF);
+                short result = (short) (tempX + tempY);
+                V[0xF] = (byte) ((result > UNSIGNED_BYTE_MAX_VALUE) ? 1 : 0);
+                V[vIdX] = (byte) (result & LAST_TWO_OPERANDS_MASK);
                 break;
             }
             case 0x5: {
@@ -258,7 +248,7 @@ public class CPU {
 
     private void executeOperationsTypeF(short opcode) {
         short vIdX = getVIdX(opcode);
-        short type = (short) (opcode & OpcodeConstants.LAST_TWO_OPERANDS_MASK);
+        short type = (short) (opcode & LAST_TWO_OPERANDS_MASK);
         switch (type) {
             case 0x0007: {
                 V[vIdX] = delayTimer;
@@ -281,7 +271,7 @@ public class CPU {
                 break;
             }
             case 0x0029: {
-                // TODO double check
+                // FIXME
                 Character character = graphics.getFontSet().get(V[vIdX]);
                 I = (short) character.charValue();
                 break;
@@ -297,16 +287,14 @@ public class CPU {
                 break;
             }
             case 0x0055: {
-                short position = I;
                 for (int i = 0; i <= vIdX; i++) {
-                    ram.writeByte(position, V[i]);
+                    ram.writeByte((short) (I + i), V[i]);
                 }
                 break;
             }
             case 0x0065: {
-                short position = I;
                 for (int i = 0; i <= vIdX; i++) {
-                    V[i] = ram.readByte(position);
+                    V[i] = ram.readByte((short) (I + i));
                 }
                 break;
             }
@@ -326,14 +314,14 @@ public class CPU {
     }
 
     private short getOpcodeType(short opcode) {
-        return (short) (opcode & OpcodeConstants.TYPE_MASK);
+        return (short) (opcode & TYPE_MASK);
     }
 
     private short getVIdX(short opcode) {
-        return (short) ((opcode & OpcodeConstants.FIRST_OPERAND_MASK) >> OpcodeConstants.FIRST_OPERAND_SHIFT);
+        return (short) ((opcode & FIRST_OPERAND_MASK) >> FIRST_OPERAND_SHIFT);
     }
 
     private short getVIdY(short opcode) {
-        return (short) ((opcode & OpcodeConstants.SECOND_OPERAND_MASK) >> OpcodeConstants.SECOND_OPERAND_SHIFT);
+        return (short) ((opcode & SECOND_OPERAND_MASK) >> SECOND_OPERAND_SHIFT);
     }
 }

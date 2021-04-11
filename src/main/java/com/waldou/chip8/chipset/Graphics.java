@@ -32,6 +32,32 @@ public class Graphics {
         FONT_SET = List.of(FONT_SET_ARRAY);
     }
 
+    boolean drawLine(int x, int y, int currentRow, byte bytes) {
+        boolean flippedPixel = false;
+        for (int i = 0; i < 8; i++) {
+            int finalX = (x + i) % getScreenWidth();
+            int finalY = (y + currentRow) % getScreenHeight();
+
+            boolean prevPixel = getPixel(finalX, finalY);
+            boolean newPixel = prevPixel ^ isBitSet(bytes, 7 - i);
+
+            setPixel(finalX, finalY, newPixel);
+
+            if (prevPixel && !newPixel) {
+                flippedPixel = true;
+            }
+        }
+        return flippedPixel;
+    }
+
+    void clearScreen() {
+        for (int i = 0; i < SCREEN_WIDTH; i++) {
+            for (int j = 0; j < SCREEN_HEIGHT; j++) {
+                screen[i][j] = false;
+            }
+        }
+    }
+
     public int getScreenWidth() {
         return SCREEN_WIDTH;
     }
@@ -40,15 +66,19 @@ public class Graphics {
         return SCREEN_HEIGHT;
     }
 
-    public boolean[][] getScreen() {
-        return screen;
+    public boolean getPixel(int x, int y) {
+        return screen[x][y];
     }
 
-    void clearScreen() {
-        screen = new boolean[SCREEN_WIDTH][SCREEN_HEIGHT];
+    private void setPixel(int x, int y, boolean value) {
+        screen[x][y] = value;
     }
 
     List<Character> getFontSet() {
         return FONT_SET;
+    }
+
+    private boolean isBitSet(byte bytes, int mask) {
+        return (bytes & (1 << mask)) != 0;
     }
 }

@@ -1,4 +1,4 @@
-package com.waldou.chip8;
+package com.waldou.chip8.ui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -6,12 +6,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Screen extends JPanel {
+    private static final Color[] PIPBOY_THEME = {new Color(55, 59, 53), new Color(89, 255, 101)};
+
     private static final long REFRESH_RATE = 1000 / 60;
     private static final int PIXEL_SIZE = 10;
-    private Dimension PANEL_SIZE;
 
-    com.waldou.chip8.chipset.Graphics graphics;
-    java.util.Timer timer;
+    private final Dimension PANEL_SIZE;
+    private final Color[] THEME;
+    private final com.waldou.chip8.chipset.Graphics graphics;
+    private final java.util.Timer timer;
 
     public Screen(com.waldou.chip8.chipset.Graphics graphics) {
         this.graphics = graphics;
@@ -22,6 +25,7 @@ public class Screen extends JPanel {
 
         timer = new Timer("Timer");
         timer.schedule(new RepaintTask(), 0, REFRESH_RATE);
+        THEME = PIPBOY_THEME;
     }
 
     @Override
@@ -33,14 +37,14 @@ public class Screen extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        g.setColor(Color.BLACK);
+        g.setColor(THEME[0]);
         g.fillRect(0, 0, (int) PANEL_SIZE.getWidth(), (int) PANEL_SIZE.getHeight());
 
         for (int x = 0; x < graphics.getScreenWidth(); x++) {
             for (int y = 0; y < graphics.getScreenHeight(); y++) {
-                boolean pixel = graphics.getScreen()[x][y];
+                boolean pixel = graphics.getPixel(x, y);
                 if (pixel) {
-                    drawPixel(g, x, y, Color.RED);
+                    drawPixel(g, x, y, THEME[1]);
                 }
             }
         }

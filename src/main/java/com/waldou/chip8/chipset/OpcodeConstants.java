@@ -1,4 +1,4 @@
-package com.waldou.chip8;
+package com.waldou.chip8.chipset;
 
 public class OpcodeConstants {
     public static final short TYPE_MASK = (short) 0xF000;
@@ -20,7 +20,7 @@ public class OpcodeConstants {
     public static final short TYPE_E = (short) 0xE000;
     public static final short TYPE_F = (short) 0xF000;
 
-    public static final short OPERANDS_MASK = (short) 0x0FFF;
+    public static final short ALL_OPERANDS_MASK = (short) 0x0FFF;
     public static final short FIRST_OPERAND_MASK = (short) 0x0F00;
     public static final short FIRST_OPERAND_SHIFT = 8;
     public static final short SECOND_OPERAND_MASK = (short) 0x00F0;
@@ -30,6 +30,9 @@ public class OpcodeConstants {
 
     public static final short OPCODE_CLEAR_SCREEN = (short) 0x00E0;
     public static final short OPCODE_RETURN = (short) 0x00EE;
+
+    public static final short KEY_EVENT_PRESSED = (short) 0x009E;
+    public static final short KEY_EVENT_NOT_PRESSED = (short) 0x00A1;
 
     private OpcodeConstants() {
     }
