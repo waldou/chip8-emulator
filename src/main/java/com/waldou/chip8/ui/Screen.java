@@ -6,7 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Screen extends JPanel {
-    private static final Color[] PIPBOY_THEME = {new Color(55, 59, 53), new Color(89, 255, 101)};
+    public static final Color[] PIPBOY_THEME = {new Color(55, 59, 53), new Color(89, 255, 101)};
 
     private static final long REFRESH_RATE = 1000 / 60;
     private static final int PIXEL_SIZE = 10;
@@ -16,7 +16,7 @@ public class Screen extends JPanel {
     private final com.waldou.chip8.chipset.Graphics graphics;
     private final java.util.Timer timer;
 
-    public Screen(com.waldou.chip8.chipset.Graphics graphics) {
+    public Screen(com.waldou.chip8.chipset.Graphics graphics, Color[] theme) {
         this.graphics = graphics;
         PANEL_SIZE = new Dimension(
                 graphics.getScreenWidth() * PIXEL_SIZE,
@@ -25,7 +25,7 @@ public class Screen extends JPanel {
 
         timer = new Timer("Timer");
         timer.schedule(new RepaintTask(), 0, REFRESH_RATE);
-        THEME = PIPBOY_THEME;
+        THEME = theme;
     }
 
     @Override

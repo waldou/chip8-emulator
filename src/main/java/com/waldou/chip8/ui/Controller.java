@@ -34,7 +34,7 @@ public class Controller implements KeyListener {
     public void keyReleased(KeyEvent e) {
         Integer keyIndex = KEY_INDEX_MAPPING.get(e.getKeyCode());
         if (keyIndex != null) {
-            input.unpress(keyIndex);
+            input.release(keyIndex);
         }
     }
 

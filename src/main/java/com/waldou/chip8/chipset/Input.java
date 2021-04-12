@@ -12,7 +12,7 @@ public class Input {
         keys[index] = true;
     }
 
-    public void unpress(int index) {
+    public void release(int index) {
         keys[index] = false;
     }
 

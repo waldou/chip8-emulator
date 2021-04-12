@@ -10,7 +10,7 @@ public class UIFrame extends JFrame {
     public UIFrame(com.waldou.chip8.chipset.Graphics graphics, KeyListener input) {
         super(WINDOW_NAME);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        getContentPane().add(new Screen(graphics), BorderLayout.CENTER);
+        getContentPane().add(new Screen(graphics, Screen.PIPBOY_THEME), BorderLayout.CENTER);
         pack();
         setResizable(false);
         setLocationRelativeTo(null);

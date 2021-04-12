@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
 }
 
 group 'com.waldou.chip8'
@@ -14,8 +15,48 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.8.0'
+    testImplementation 'org.mockito:mockito-core:3.8.0'
 }
 
 test {
+    maxHeapSize = "2048m"
     useJUnitPlatform()
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+        html.destination file("${reportsDir}/jacoco/html")
+    }
+    jacocoTestReport {
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(
+                        dir: it,
+                        exclude: []
+                )
+            }))
+        }
+    }
+    dependsOn test
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.4
+            }
+        }
+    }
+}
+
+task coverage {
+    dependsOn 'clean'
+    dependsOn 'jacocoTestReport'
+    tasks.findByName('jacocoTestReport').mustRunAfter 'clean'
 }
