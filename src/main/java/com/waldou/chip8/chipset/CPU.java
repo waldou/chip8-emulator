@@ -8,7 +8,7 @@ import static com.waldou.chip8.chipset.OpcodeConstants.*;
 
 public class CPU {
     private static final long ONE_SECOND_IN_NANOS = 1_000_000_000;
-    private static final long OPCODES_PER_SECOND = 480;
+    private static final long OPCODES_PER_SECOND = 250;
     private static final long OPCODES_SLICE = ONE_SECOND_IN_NANOS / OPCODES_PER_SECOND;
     private static final int GENERAL_PURPOSE_REGISTERS = 16;
     private static final int CALL_STACK_SIZE = 16;
@@ -64,16 +64,18 @@ public class CPU {
      * @param deltaTime
      */
     public void cycle(long deltaTime) throws InterruptedException {
-        handleClockSpeed(deltaTime);
+
 
         short opcode = ram.readOpcode(programCounter);
         programCounter += 2;
         execute(opcode);
 
         updateTimers();
+
+        handleClockSpeed(deltaTime);
     }
 
-    private void execute(short opcode) {
+    private void execute(short opcode) throws InterruptedException {
         if (Main.DEBUG) {
             System.out.println("Executing opcode: " + String.format("0x%04X", opcode));
         }
@@ -246,7 +248,7 @@ public class CPU {
         }
     }
 
-    private void executeOperationsTypeF(short opcode) {
+    private void executeOperationsTypeF(short opcode) throws InterruptedException {
         short vIdX = getVIdX(opcode);
         short type = (short) (opcode & LAST_TWO_OPERANDS_MASK);
         switch (type) {
@@ -255,7 +257,7 @@ public class CPU {
                 break;
             }
             case 0x000A: {
-                // TODO wait for key press
+                V[vIdX] = input.waitForKey();
                 break;
             }
             case 0x0015: {
@@ -271,9 +273,7 @@ public class CPU {
                 break;
             }
             case 0x0029: {
-                // FIXME
-                Character character = graphics.getFontSet().get(V[vIdX]);
-                I = (short) character.charValue();
+                I = ram.getFontLocation(V[vIdX]);
                 break;
             }
             case 0x0033: {

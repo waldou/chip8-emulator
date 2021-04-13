@@ -13,9 +13,15 @@ Run `Main.java` with first argument as the ROM file path.
 
 ### Status
 
-- Fonts are not working.
-- Missing sound.
-- Missing unit tests.
+- Working: Graphics, input, fonts.
+- Missing: Sound.
+- Potential improvements:
+    * Better test coverage.
+    * Menu for rom load.
+    * Reset rom.
+    * Save states.
+    * Color themes.
+    * Additional graphic effects.
 
 ### References
 

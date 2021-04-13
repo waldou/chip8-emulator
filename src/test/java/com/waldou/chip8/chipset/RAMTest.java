@@ -74,10 +74,10 @@ class RAMTest {
     }
 
     @Test
-    void shouldNotFillMemoryBelowStart() {
-        for (int i = 0; i < 0x200; i++) {
+    void shouldContainFontSet() {
+        for (int i = 0; i < FontSet.FONT_SET_ARRAY.length; i++) {
             byte bytes = ram.readByte((short) i);
-            assertEquals(0x00, bytes);
+            assertEquals(FontSet.FONT_SET_ARRAY[i], bytes);
         }
     }
 }
