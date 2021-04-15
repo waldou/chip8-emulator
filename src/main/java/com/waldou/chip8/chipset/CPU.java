@@ -14,6 +14,10 @@ public class CPU {
     private static final int CALL_STACK_SIZE = 16;
     private static final short UNSIGNED_BYTE_MAX_VALUE = 255;
 
+    private static final long TIMER_UPDATES_PER_SECOND = 60;
+    private static final long TIME_TO_UPDATE_TIMERS_IN_NANOS = ONE_SECOND_IN_NANOS / TIMER_UPDATES_PER_SECOND;
+    private long timeSinceTimerUpdate = 0;
+
     private byte[] V;
     private short I;
     private byte delayTimer;
@@ -23,15 +27,18 @@ public class CPU {
     private short callStack[];
     private short stackPointer = 0;
 
+    private final RAM ram;
     private final Graphics graphics;
     private final Input input;
-    private final RAM ram;
+    private final Sound sound;
+
     private final Random rng;
 
-    public CPU(Graphics graphics, Input input, RAM ram) {
+    public CPU(RAM ram, Graphics graphics, Input input, Sound sound) {
+        this.ram = ram;
         this.graphics = graphics;
         this.input = input;
-        this.ram = ram;
+        this.sound = sound;
         rng = new Random();
 
         V = new byte[GENERAL_PURPOSE_REGISTERS];
@@ -64,15 +71,13 @@ public class CPU {
      * @param deltaTime
      */
     public void cycle(long deltaTime) throws InterruptedException {
-
+        handleClockSpeed(deltaTime);
 
         short opcode = ram.readOpcode(programCounter);
         programCounter += 2;
         execute(opcode);
 
-        updateTimers();
-
-        handleClockSpeed(deltaTime);
+        updateTimers(deltaTime);
     }
 
     private void execute(short opcode) throws InterruptedException {
@@ -301,15 +306,20 @@ public class CPU {
         }
     }
 
-    private void updateTimers() {
-        if (delayTimer > 0) {
-            delayTimer--;
-        }
-        if (soundTimer > 0) {
-            if (soundTimer == 1) {
-                System.out.println("SOUND!");
+    private void updateTimers(long deltaTime) {
+        timeSinceTimerUpdate += deltaTime;
+        if (timeSinceTimerUpdate >= TIME_TO_UPDATE_TIMERS_IN_NANOS) {
+            if (delayTimer > 0) {
+                delayTimer--;
             }
-            soundTimer--;
+            if (soundTimer > 0) {
+                sound.play(Sound.TONE_A3);
+                soundTimer--;
+                if (soundTimer == 0) {
+                    sound.stop();
+                }
+            }
+            timeSinceTimerUpdate = 0;
         }
     }
 

@@ -1,9 +1,6 @@
 package com.waldou.chip8;
 
-import com.waldou.chip8.chipset.CPU;
-import com.waldou.chip8.chipset.Graphics;
-import com.waldou.chip8.chipset.Input;
-import com.waldou.chip8.chipset.RAM;
+import com.waldou.chip8.chipset.*;
 import com.waldou.chip8.ui.Controller;
 import com.waldou.chip8.ui.UIFrame;
 
@@ -26,7 +23,8 @@ public class Main {
         RAM ram = new RAM(program);
         Graphics graphics = new Graphics();
         Input input = new Input();
-        CPU cpu = new CPU(graphics, input, ram);
+        Sound sound = new Sound();
+        CPU cpu = new CPU(ram, graphics, input, sound);
 
         Controller controller = new Controller(input);
 

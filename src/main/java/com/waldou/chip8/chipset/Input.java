@@ -27,7 +27,6 @@ public class Input {
         while (key == -1) {
             Thread.sleep(1);
             key = monitorKeyChange(keys, copy);
-
         }
         return key;
     }

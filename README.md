@@ -13,8 +13,7 @@ Run `Main.java` with first argument as the ROM file path.
 
 ### Status
 
-- Working: Graphics, input, fonts.
-- Missing: Sound.
+- Fully working to the best of my knowledge, with at least the original 34 opcodes (minus 0x0NNN).
 - Potential improvements:
     * Better test coverage.
     * Menu for rom load.

@@ -44,15 +44,15 @@ public class Screen extends JPanel {
             for (int y = 0; y < graphics.getScreenHeight(); y++) {
                 boolean pixel = graphics.getPixel(x, y);
                 if (pixel) {
-                    drawPixel(g, x, y, THEME[1]);
+                    drawPixel(g, x, y, THEME[1], PIXEL_SIZE);
                 }
             }
         }
     }
 
-    private void drawPixel(Graphics g, int x, int y, Color color) {
+    private void drawPixel(Graphics g, int x, int y, Color color, int pixelSize) {
         g.setColor(color);
-        g.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        g.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
     }
 
     private class RepaintTask extends TimerTask {
