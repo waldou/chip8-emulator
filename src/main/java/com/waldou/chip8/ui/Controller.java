@@ -9,8 +9,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Controller implements KeyListener {
+    private static final ControllerCommand DEFAULT_COMMAND_IMPL = () -> {
+    };
+
     private final Map<Integer, Integer> KEY_INDEX_MAPPING;
     private final Input input;
+
+    ControllerCommand escapeCommand = DEFAULT_COMMAND_IMPL;
+    ControllerCommand resetCommand = DEFAULT_COMMAND_IMPL;
+    ControllerCommand switchThemeCommand = DEFAULT_COMMAND_IMPL;
 
     public Controller(Input input) {
         this.input = input;
@@ -35,7 +42,38 @@ public class Controller implements KeyListener {
         Integer keyIndex = KEY_INDEX_MAPPING.get(e.getKeyCode());
         if (keyIndex != null) {
             input.release(keyIndex);
+        } else {
+            checkSystemKeys(e);
         }
+    }
+
+    private void checkSystemKeys(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_BACK_SPACE: {
+                resetCommand.execute();
+                break;
+            }
+            case KeyEvent.VK_ESCAPE: {
+                escapeCommand.execute();
+                break;
+            }
+            case KeyEvent.VK_RIGHT: {
+                switchThemeCommand.execute();
+                break;
+            }
+        }
+    }
+
+    public void setupEscapeCommand(ControllerCommand command) {
+        escapeCommand = command;
+    }
+
+    public void setupResetCommand(ControllerCommand command) {
+        resetCommand = command;
+    }
+
+    public void setupSwitchThemeCommand(ControllerCommand command) {
+        switchThemeCommand = command;
     }
 
     private Map<Integer, Integer> keyKeyIndexMapping() {
@@ -65,5 +103,9 @@ public class Controller implements KeyListener {
         mapping.put(86, 0xF);
 
         return mapping;
+    }
+
+    public interface ControllerCommand {
+        void execute();
     }
 }

@@ -17,7 +17,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
     testImplementation 'org.mockito:mockito-junit-jupiter:3.8.0'
-    testImplementation 'org.mockito:mockito-core:3.8.0'
+    testImplementation 'org.mockito:mockito-inline:3.8.0'
 
     testImplementation 'org.awaitility:awaitility:4.0.3'
 }
@@ -61,4 +61,10 @@ task coverage {
     dependsOn 'clean'
     dependsOn 'jacocoTestReport'
     tasks.findByName('jacocoTestReport').mustRunAfter 'clean'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.waldou.chip8.Main'
+    }
 }

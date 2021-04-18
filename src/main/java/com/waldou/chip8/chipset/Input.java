@@ -1,5 +1,7 @@
 package com.waldou.chip8.chipset;
 
+import com.waldou.chip8.Utils;
+
 public class Input {
     private static final int KEYS = 16;
     private boolean[] keys;
@@ -25,7 +27,7 @@ public class Input {
         System.arraycopy(keys, 0, copy, 0, keys.length);
         byte key = monitorKeyChange(keys, copy);
         while (key == -1) {
-            Thread.sleep(1);
+            Utils.threadSleep(1);
             key = monitorKeyChange(keys, copy);
         }
         return key;

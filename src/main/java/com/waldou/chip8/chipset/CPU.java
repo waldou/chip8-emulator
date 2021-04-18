@@ -1,6 +1,7 @@
 package com.waldou.chip8.chipset;
 
 import com.waldou.chip8.Main;
+import com.waldou.chip8.Utils;
 
 import java.util.Random;
 
@@ -57,9 +58,9 @@ public class CPU {
         if (OPCODES_SLICE > deltaTime) {
             long diffTime = OPCODES_SLICE - deltaTime;
             long diffTimeInMillis = (OPCODES_SLICE - deltaTime) / 1_000_000;
-            long targetTime = System.nanoTime() + diffTime;
-            while (System.nanoTime() < targetTime) {
-                Thread.sleep(diffTimeInMillis);
+            long targetTime = Utils.systemNanoTime() + diffTime;
+            while (Utils.systemNanoTime() < targetTime) {
+                Utils.threadSleep(diffTimeInMillis);
                 diffTimeInMillis = 0;
             }
         }

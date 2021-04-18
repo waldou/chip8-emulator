@@ -1,5 +1,6 @@
 package com.waldou.chip8.ui;
 
+import com.waldou.chip8.TestUtils;
 import com.waldou.chip8.chipset.Input;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,9 @@ class ControllerTest {
 
     @Mock
     private Input mockInput;
+
+    @Mock
+    private Controller.ControllerCommand mockCommand;
 
     @BeforeEach
     void setUp() {
@@ -65,6 +69,51 @@ class ControllerTest {
         controller.keyReleased(mockKeyEvent);
 
         verify(mockInput, never()).release(any(Integer.class));
+    }
+
+    @Test
+    void shouldExecuteDefaultCommand() throws Exception {
+        TestUtils.setFinalStatic(Controller.class.getDeclaredField("DEFAULT_COMMAND_IMPL"), mockCommand);
+        Controller controller = new Controller(mockInput);
+
+        KeyEvent mockKeyEvent = mock(KeyEvent.class);
+        when(mockKeyEvent.getKeyCode()).thenReturn(KeyEvent.VK_BACK_SPACE);
+        controller.keyReleased(mockKeyEvent);
+
+        verify(mockCommand).execute();
+    }
+
+    @Test
+    void shouldExecuteResetCommand() {
+        controller.setupResetCommand(mockCommand);
+
+        KeyEvent mockKeyEvent = mock(KeyEvent.class);
+        when(mockKeyEvent.getKeyCode()).thenReturn(KeyEvent.VK_BACK_SPACE);
+        controller.keyReleased(mockKeyEvent);
+
+        verify(mockCommand).execute();
+    }
+
+    @Test
+    void shouldExecuteEscapeCommand() {
+        controller.setupEscapeCommand(mockCommand);
+
+        KeyEvent mockKeyEvent = mock(KeyEvent.class);
+        when(mockKeyEvent.getKeyCode()).thenReturn(KeyEvent.VK_ESCAPE);
+        controller.keyReleased(mockKeyEvent);
+
+        verify(mockCommand).execute();
+    }
+
+    @Test
+    void shouldExecuteSwitchThemeCommand() {
+        controller.setupSwitchThemeCommand(mockCommand);
+
+        KeyEvent mockKeyEvent = mock(KeyEvent.class);
+        when(mockKeyEvent.getKeyCode()).thenReturn(KeyEvent.VK_RIGHT);
+        controller.keyReleased(mockKeyEvent);
+
+        verify(mockCommand).execute();
     }
 
     private Map<Integer, Integer> keyKeyIndexMapping() {

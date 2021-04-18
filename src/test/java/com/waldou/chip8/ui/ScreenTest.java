@@ -6,16 +6,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.awt.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class ScreenTest {
-    public static final Color[] THEME = {new Color(55, 59, 53), new Color(89, 255, 101)};
-
     private Screen screen;
 
     @Mock
@@ -25,7 +26,7 @@ class ScreenTest {
     void setUp() {
         when(mockGraphics.getScreenWidth()).thenReturn(2);
         when(mockGraphics.getScreenHeight()).thenReturn(1);
-        screen = new Screen(mockGraphics, THEME);
+        screen = new Screen(mockGraphics);
     }
 
     @Test
@@ -47,7 +48,9 @@ class ScreenTest {
 
         screen.paintComponent(mockAwtGraphics);
 
-        verify(mockAwtGraphics, atLeastOnce()).setColor(THEME[0]);
+        Color[] currentTheme = screen.getCurrentTheme();
+
+        verify(mockAwtGraphics, atLeastOnce()).setColor(currentTheme[0]);
         verify(mockAwtGraphics, atLeastOnce()).fillRect(0, 0, 20, 10);
     }
 
@@ -62,10 +65,28 @@ class ScreenTest {
 
         screen.paintComponent(mockAwtGraphics);
 
-        verify(mockAwtGraphics, atLeastOnce()).setColor(THEME[0]);
+        Color[] currentTheme = screen.getCurrentTheme();
+
+        verify(mockAwtGraphics, atLeastOnce()).setColor(currentTheme[0]);
         verify(mockAwtGraphics, atLeastOnce()).fillRect(0, 0, 20, 10);
 
-        verify(mockAwtGraphics, atLeastOnce()).setColor(THEME[1]);
-        verify(mockAwtGraphics, atLeastOnce()).fillRect(10, 0, 10, 10);
+        verify(mockAwtGraphics, atLeastOnce()).setColor(currentTheme[1]);
+        verify(mockAwtGraphics, atLeastOnce()).fillRect(11, 1, 8, 8);
+    }
+
+    @Test
+    void shouldSwitchThemeIndex() {
+        assertEquals(0, screen.getCurrentThemeIndex());
+        screen.switchTheme();
+        assertEquals(1, screen.getCurrentThemeIndex());
+    }
+
+    @Test
+    void shouldGoBackToFirstThemeIndex() {
+        assertEquals(0, screen.getCurrentThemeIndex());
+        screen.switchTheme();
+        assertEquals(1, screen.getCurrentThemeIndex());
+        screen.switchTheme();
+        assertEquals(0, screen.getCurrentThemeIndex());
     }
 }

@@ -29,7 +29,7 @@ class SoundTest {
     }
 
     @Test
-    void shouldSetPlayingStateCorrectly() throws InterruptedException {
+    void shouldSetPlayingStateCorrectly() {
         sound.play(Sound.TONE_A3);
 
         await().until(() -> sound.isPlaying());

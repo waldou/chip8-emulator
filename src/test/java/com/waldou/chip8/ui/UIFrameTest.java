@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyListener;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,12 +19,9 @@ class UIFrameTest {
     @Mock
     private Graphics mockGraphics;
 
-    @Mock
-    private Controller mockController;
-
     @BeforeEach
     void setUp() {
-        uiFrame = new UIFrame(mockGraphics, mockController);
+        uiFrame = new UIFrame(mockGraphics);
     }
 
     @Test
@@ -44,13 +40,5 @@ class UIFrameTest {
     @Test
     void shouldNotBeResizable() {
         assertFalse(uiFrame.isResizable());
-    }
-
-    @Test
-    void shouldSetKeyListener() {
-        KeyListener[] keyListeners = uiFrame.getKeyListeners();
-
-        assertEquals(1, keyListeners.length);
-        assertEquals(mockController, keyListeners[0]);
     }
 }

@@ -28,7 +28,7 @@ public class Graphics {
         return flippedPixel;
     }
 
-    void clearScreen() {
+    public void clearScreen() {
         for (int i = 0; i < SCREEN_WIDTH; i++) {
             for (int j = 0; j < SCREEN_HEIGHT; j++) {
                 screen[i][j] = false;

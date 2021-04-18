@@ -80,4 +80,13 @@ class RAMTest {
             assertEquals(FontSet.FONT_SET_ARRAY[i], bytes);
         }
     }
+
+    @Test
+    void shouldGetFontLocation() {
+        assertEquals(0, ram.getFontLocation((byte) 0x00));
+        assertEquals(5, ram.getFontLocation((byte) 0x01));
+        assertEquals(10, ram.getFontLocation((byte) 0x02));
+        assertEquals(15, ram.getFontLocation((byte) 0x03));
+        assertEquals(20, ram.getFontLocation((byte) 0x04));
+    }
 }
