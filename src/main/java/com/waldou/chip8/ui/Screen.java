@@ -16,7 +16,6 @@ public class Screen extends JPanel {
 
     private final Dimension panelSize;
     private final com.waldou.chip8.chipset.Graphics graphics;
-    private final java.util.Timer timer;
 
     private int currentThemeIndex = 0;
 
@@ -27,7 +26,7 @@ public class Screen extends JPanel {
                 graphics.getScreenHeight() * PIXEL_SIZE
         );
 
-        timer = new Timer("Timer");
+        Timer timer = new Timer("Timer");
         timer.schedule(new RepaintTask(), 0, REFRESH_RATE);
     }
 

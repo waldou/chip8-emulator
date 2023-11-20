@@ -6,20 +6,23 @@ plugins {
 group 'com.waldou.chip8'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = '11'
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.8.0'
-    testImplementation 'org.mockito:mockito-inline:3.8.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.7.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
 
-    testImplementation 'org.awaitility:awaitility:4.0.3'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
 }
 
 test {
@@ -29,9 +32,9 @@ test {
 
 jacocoTestReport {
     reports {
-        xml.enabled true
-        html.enabled true
-        html.destination file("${reportsDir}/jacoco/html")
+        xml.required = true
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
     jacocoTestReport {
         afterEvaluate {
@@ -57,10 +60,10 @@ jacocoTestCoverageVerification {
     }
 }
 
-task coverage {
+tasks.register('coverage') {
     dependsOn 'clean'
     dependsOn 'jacocoTestReport'
-    tasks.findByName('jacocoTestReport').mustRunAfter 'clean'
+    jacocoTestReport.mustRunAfter 'clean'
 }
 
 jar {
