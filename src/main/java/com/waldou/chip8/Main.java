@@ -22,6 +22,7 @@ public class Main {
 
     private String filename = null;
     private File currentDirectory = null;
+    private Sound currentSound = null;
 
     public static void main(String[] args) throws InterruptedException {
         new Main().initialize();
@@ -43,10 +44,11 @@ public class Main {
             try {
                 byte[] program = Utils.readFile(filename);
                 RAM ram = new RAM(program);
-                Sound sound = new Sound();
-                CPU cpu = new CPU(ram, graphics, input, sound);
+                currentSound = new Sound();
+                CPU cpu = new CPU(ram, graphics, input, currentSound);
                 startEmulation(cpu);
             } catch (Exception e) {
+                stopCurrentSound();
                 started.set(false);
             }
         }
@@ -130,12 +132,14 @@ public class Main {
         controller.setupResetCommand(() -> {
             if (started.get()) {
                 started.set(false);
+                stopCurrentSound();
                 graphics.clearScreen();
             }
         });
         controller.setupEscapeCommand(() -> {
             if (started.get()) {
                 started.set(false);
+                stopCurrentSound();
                 graphics.clearScreen();
                 filename = null;
                 setupLoadRomButton(panel);
@@ -146,6 +150,13 @@ public class Main {
 
         controller.setupSwitchThemeCommand(panel::switchTheme);
         return controller;
+    }
+
+    private void stopCurrentSound() {
+        if (currentSound != null) {
+            currentSound.stop();
+            currentSound = null;
+        }
     }
 
     /**

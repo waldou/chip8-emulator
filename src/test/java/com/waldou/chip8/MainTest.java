@@ -126,13 +126,36 @@ class MainTest {
     void shouldSetupResetCommand() throws Exception {
         Main main = new Main();
         Graphics mockGraphics = mock(Graphics.class);
+        Sound mockSound = mock(Sound.class);
+        setCurrentSound(main, mockSound);
         Controller controller = setupController(main, new Input(), mockGraphics, mock(JFrame.class), mock(Screen.class));
         Main.getStartedForTesting().set(true);
 
         controller.keyReleased(keyEvent(KeyEvent.VK_BACK_SPACE));
 
         assertTrue(!Main.getStartedForTesting().get());
+        verify(mockSound).stop();
         verify(mockGraphics).clearScreen();
+    }
+
+    @Test
+    void shouldStopSoundWhenEscapeCommandClosesRom() throws Exception {
+        Main main = new Main();
+        Graphics mockGraphics = mock(Graphics.class);
+        Sound mockSound = mock(Sound.class);
+        Screen mockScreen = mock(Screen.class);
+        JFrame mockFrame = mock(JFrame.class);
+        setCurrentSound(main, mockSound);
+        Controller controller = setupController(main, new Input(), mockGraphics, mockFrame, mockScreen);
+        Main.getStartedForTesting().set(true);
+
+        controller.keyReleased(keyEvent(KeyEvent.VK_ESCAPE));
+
+        assertTrue(!Main.getStartedForTesting().get());
+        verify(mockSound).stop();
+        verify(mockGraphics).clearScreen();
+        verify(mockFrame).validate();
+        verify(mockScreen).repaint();
     }
 
     @Test
@@ -234,6 +257,12 @@ class MainTest {
         field.setAccessible(true);
         AtomicBoolean frameStarted = (AtomicBoolean) field.get(null);
         frameStarted.set(value);
+    }
+
+    private void setCurrentSound(Main main, Sound sound) throws Exception {
+        Field field = Main.class.getDeclaredField("currentSound");
+        field.setAccessible(true);
+        field.set(main, sound);
     }
 
     private boolean getFrameStarted() throws Exception {
