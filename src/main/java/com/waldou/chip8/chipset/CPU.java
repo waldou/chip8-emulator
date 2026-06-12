@@ -19,13 +19,13 @@ public class CPU {
     private static final long TIME_TO_UPDATE_TIMERS_IN_NANOS = ONE_SECOND_IN_NANOS / TIMER_UPDATES_PER_SECOND;
     private long timeSinceTimerUpdate = 0;
 
-    private byte[] V;
+    private final byte[] V;
     private short I;
     private byte delayTimer;
     private byte soundTimer;
     private short programCounter;
 
-    private short callStack[];
+    private final short[] callStack;
     private short stackPointer = 0;
 
     private final RAM ram;
@@ -87,7 +87,7 @@ public class CPU {
         }
         short type = getOpcodeType(opcode);
         switch (type) {
-            case TYPE_ZERO: {
+            case TYPE_ZERO -> {
                 if (OPCODE_CLEAR_SCREEN == opcode) {
                     graphics.clearScreen();
                 } else if (OPCODE_RETURN == opcode) {
@@ -95,82 +95,67 @@ public class CPU {
                 } else {
                     throw invalidOpcodeException(opcode);
                 }
-                break;
             }
-            case TYPE_ONE:
+            case TYPE_ONE ->
                 programCounter = (short) (opcode & ALL_OPERANDS_MASK);
-                break;
-            case TYPE_TWO: {
+            case TYPE_TWO -> {
                 callStack[stackPointer++] = programCounter;
                 programCounter = (short) (opcode & ALL_OPERANDS_MASK);
-                break;
             }
-            case TYPE_THREE: {
+            case TYPE_THREE -> {
                 short vId = getVIdX(opcode);
                 byte value = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
                 if (V[vId] == value) {
                     programCounter += 0x0002;
                 }
-                break;
             }
-            case TYPE_FOUR: {
+            case TYPE_FOUR -> {
                 short vId = getVIdX(opcode);
                 byte value = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
                 if (V[vId] != value) {
                     programCounter += 0x0002;
                 }
-                break;
             }
-            case TYPE_FIVE: {
+            case TYPE_FIVE -> {
                 short vIdX = getVIdX(opcode);
                 short vIdY = getVIdY(opcode);
                 if (V[vIdX] == V[vIdY]) {
                     programCounter += 0x0002;
                 }
-                break;
             }
-            case TYPE_SIX: {
+            case TYPE_SIX -> {
                 short vId = getVIdX(opcode);
                 byte operands = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
                 V[vId] = operands;
-                break;
             }
-            case TYPE_SEVEN: {
+            case TYPE_SEVEN -> {
                 short vId = getVIdX(opcode);
                 byte operands = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
                 short temp = V[vId];
                 temp += operands;
                 V[vId] = (byte) (temp & LAST_TWO_OPERANDS_MASK);
-                break;
             }
-            case TYPE_EIGHT: {
+            case TYPE_EIGHT ->
                 executeOperationsTypeEight(opcode);
-                break;
-            }
-            case TYPE_NINE: {
+            case TYPE_NINE -> {
                 short vIdX = getVIdX(opcode);
                 short vIdY = getVIdY(opcode);
                 programCounter += (short) ((V[vIdX] != V[vIdY]) ? 0x0002 : 0);
-                break;
             }
-            case TYPE_A: {
+            case TYPE_A ->
                 I = (short) (opcode & ALL_OPERANDS_MASK);
-                break;
-            }
-            case TYPE_B: {
+            case TYPE_B -> {
                 short operand = (short) (opcode & ALL_OPERANDS_MASK);
                 programCounter = (short) (V[0] + operand);
-                break;
             }
-            case TYPE_C: {
+            case TYPE_C -> {
                 short vId = getVIdX(opcode);
                 byte random = (byte) rng.nextInt(UNSIGNED_BYTE_MAX_VALUE);
                 byte operands = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
 
                 V[vId] = (byte) (random & operands);
-                break;
             }
-            case TYPE_D: {
+            case TYPE_D -> {
                 short x = V[getVIdX(opcode)];
                 short y = V[getVIdY(opcode)];
                 short height = (short) (opcode & THIRD_OPERAND_MASK);
@@ -182,9 +167,8 @@ public class CPU {
                         V[0xF] = 1;
                     }
                 }
-                break;
             }
-            case TYPE_E:
+            case TYPE_E -> {
                 byte key = V[getVIdX(opcode)];
                 short keyEvent = (short) (opcode & LAST_TWO_OPERANDS_MASK);
                 if (KEY_EVENT_PRESSED == keyEvent) {
@@ -194,11 +178,10 @@ public class CPU {
                 } else {
                     throw invalidOpcodeException(opcode);
                 }
-                break;
-            case TYPE_F:
+            }
+            case TYPE_F ->
                 executeOperationsTypeF(opcode);
-                break;
-            default:
+            default ->
                 throw invalidOpcodeException(opcode);
         }
     }
@@ -209,54 +192,36 @@ public class CPU {
         short vIdY = getVIdY(opcode);
         short type = (short) (opcode & THIRD_OPERAND_MASK);
         switch (type) {
-            case 0x0: {
-                V[vIdX] = V[vIdY];
-                break;
-            }
-            case 0x1: {
-                V[vIdX] = (byte) (V[vIdX] | V[vIdY]);
-                break;
-            }
-            case 0x2: {
-                V[vIdX] = (byte) (V[vIdX] & V[vIdY]);
-                break;
-            }
-            case 0x3: {
-                V[vIdX] = (byte) (V[vIdX] ^ V[vIdY]);
-                break;
-            }
-            case 0x4: {
+            case 0x0 -> V[vIdX] = V[vIdY];
+            case 0x1 -> V[vIdX] = (byte) (V[vIdX] | V[vIdY]);
+            case 0x2 -> V[vIdX] = (byte) (V[vIdX] & V[vIdY]);
+            case 0x3 -> V[vIdX] = (byte) (V[vIdX] ^ V[vIdY]);
+            case 0x4 -> {
                 short tempX = (short) (V[vIdX] & 0xFF);
                 short tempY = (short) (V[vIdY] & 0xFF);
                 short result = (short) (tempX + tempY);
                 V[0xF] = (byte) ((result > UNSIGNED_BYTE_MAX_VALUE) ? 1 : 0);
                 V[vIdX] = (byte) (result & LAST_TWO_OPERANDS_MASK);
-                break;
             }
-            case 0x5: {
+            case 0x5 -> {
                 V[0xF] = (byte) ((V[vIdX] > V[vIdY]) ? 1 : 0);
                 V[vIdX] = (byte) (V[vIdX] - V[vIdY]);
-                break;
             }
-            case 0x6: {
+            case 0x6 -> {
                 byte lsb = (byte) (V[vIdX] & 0x0001);
                 V[0xF] = lsb;
                 V[vIdX] = (byte) (V[vIdX] >> 1);
-                break;
             }
-            case 0x7: {
+            case 0x7 -> {
                 V[0xF] = (byte) ((V[vIdY] > V[vIdX]) ? 1 : 0);
                 V[vIdX] = (byte) (V[vIdY] - V[vIdX]);
-                break;
             }
-            case 0xE: {
+            case 0xE -> {
                 byte msb = (byte) (V[vIdX] & 0x8000);
                 V[0xF] = msb;
                 V[vIdX] = (byte) (V[vIdX] << 1);
-                break;
             }
-            default:
-                throw invalidOpcodeException(opcode);
+            default -> throw invalidOpcodeException(opcode);
         }
     }
 
@@ -264,31 +229,13 @@ public class CPU {
         short vIdX = getVIdX(opcode);
         short type = (short) (opcode & LAST_TWO_OPERANDS_MASK);
         switch (type) {
-            case 0x0007: {
-                V[vIdX] = delayTimer;
-                break;
-            }
-            case 0x000A: {
-                V[vIdX] = input.waitForKey();
-                break;
-            }
-            case 0x0015: {
-                delayTimer = V[vIdX];
-                break;
-            }
-            case 0x0018: {
-                soundTimer = V[vIdX];
-                break;
-            }
-            case 0x001E: {
-                I += V[vIdX];
-                break;
-            }
-            case 0x0029: {
-                I = ram.getFontLocation(V[vIdX]);
-                break;
-            }
-            case 0x0033: {
+            case 0x0007 -> V[vIdX] = delayTimer;
+            case 0x000A -> V[vIdX] = input.waitForKey();
+            case 0x0015 -> delayTimer = V[vIdX];
+            case 0x0018 -> soundTimer = V[vIdX];
+            case 0x001E -> I += V[vIdX];
+            case 0x0029 -> I = ram.getFontLocation(V[vIdX]);
+            case 0x0033 -> {
                 // Based on http://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
                 byte first = (byte) (V[vIdX] / 100);
                 byte second = (byte) ((V[vIdX] / 10) % 10);
@@ -296,22 +243,18 @@ public class CPU {
                 ram.writeByte(I, first);
                 ram.writeByte((short) (I + 1), second);
                 ram.writeByte((short) (I + 2), third);
-                break;
             }
-            case 0x0055: {
+            case 0x0055 -> {
                 for (int i = 0; i <= vIdX; i++) {
                     ram.writeByte((short) (I + i), V[i]);
                 }
-                break;
             }
-            case 0x0065: {
+            case 0x0065 -> {
                 for (int i = 0; i <= vIdX; i++) {
                     V[i] = ram.readByte((short) (I + i));
                 }
-                break;
             }
-            default:
-                throw invalidOpcodeException(opcode);
+            default -> throw invalidOpcodeException(opcode);
         }
     }
 
