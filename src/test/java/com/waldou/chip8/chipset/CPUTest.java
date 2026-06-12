@@ -454,17 +454,18 @@ class CPUTest {
     }
 
     @Test
-    void shouldSleepWhenCycleRunsFasterThanOpcodeSlice() throws InterruptedException {
-        RAM ram = new RAM(program(0x00E0));
+    void shouldSleepBeforeNextOpcodeWindow() throws InterruptedException {
+        RAM ram = new RAM(program(0x00E0, 0x00E0));
         CPU cpu = cpu(ram, new Graphics(), new Input(), mock(Sound.class));
 
         try (MockedStatic<Utils> utilsMockedStatic = Mockito.mockStatic(Utils.class)) {
             utilsMockedStatic.when(Utils::systemNanoTime)
-                    .thenReturn(0L, 0L, 4_000_000L);
+                    .thenReturn(0L, 0L, 0L, 4_000_000L);
 
             cpu.cycle(1);
+            cpu.cycle(1);
 
-            utilsMockedStatic.verify(() -> Utils.threadSleep(3));
+            utilsMockedStatic.verify(() -> Utils.threadSleep(4));
         }
     }
 

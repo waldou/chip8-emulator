@@ -19,6 +19,7 @@ public class CPU {
     private static final long TIMER_UPDATES_PER_SECOND = 60;
     private static final long TIME_TO_UPDATE_TIMERS_IN_NANOS = ONE_SECOND_IN_NANOS / TIMER_UPDATES_PER_SECOND;
     private long timeSinceTimerUpdate = 0;
+    private long nextOpcodeTime = Long.MIN_VALUE;
 
     private final byte[] V;
     private short I;
@@ -55,16 +56,27 @@ public class CPU {
      * Throttle CPU speed. This will sleep the thread for the approximate time it should
      * so it can roughly emulate the CPU speed.
      */
-    private void handleClockSpeed(long deltaTime) throws InterruptedException {
-        if (OPCODES_SLICE > deltaTime) {
-            long diffTime = OPCODES_SLICE - deltaTime;
-            long diffTimeInMillis = (OPCODES_SLICE - deltaTime) / 1_000_000;
-            long targetTime = Utils.systemNanoTime() + diffTime;
-            while (Utils.systemNanoTime() < targetTime) {
-                Utils.threadSleep(diffTimeInMillis);
-                diffTimeInMillis = 0;
-            }
+    private void handleClockSpeed() throws InterruptedException {
+        long now = Utils.systemNanoTime();
+        if (nextOpcodeTime == Long.MIN_VALUE) {
+            nextOpcodeTime = now;
         }
+
+        if (now < nextOpcodeTime) {
+            now = waitUntil(nextOpcodeTime);
+        }
+
+        nextOpcodeTime = Math.max(nextOpcodeTime + OPCODES_SLICE, now + OPCODES_SLICE);
+    }
+
+    private long waitUntil(long targetTime) throws InterruptedException {
+        long now = Utils.systemNanoTime();
+        while (now < targetTime) {
+            long diffTimeInMillis = (targetTime - now) / 1_000_000;
+            Utils.threadSleep(diffTimeInMillis);
+            now = Utils.systemNanoTime();
+        }
+        return now;
     }
 
     /**
@@ -73,7 +85,7 @@ public class CPU {
      * @param deltaTime
      */
     public void cycle(long deltaTime) throws InterruptedException {
-        handleClockSpeed(deltaTime);
+        handleClockSpeed();
 
         short opcode = ram.readOpcode(programCounter);
         programCounter += 2;
