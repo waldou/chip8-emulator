@@ -3,8 +3,6 @@ package com.waldou.chip8.ui;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Screen extends JPanel {
     public static final Color[] CLASSIC_THEME = {Color.BLACK, Color.WHITE};
@@ -26,8 +24,8 @@ public class Screen extends JPanel {
                 graphics.getScreenHeight() * PIXEL_SIZE
         );
 
-        Timer timer = new Timer("Timer");
-        timer.schedule(new RepaintTask(), 0, REFRESH_RATE);
+        Timer timer = new Timer((int) REFRESH_RATE, e -> repaint());
+        timer.start();
     }
 
     @Override
@@ -66,12 +64,5 @@ public class Screen extends JPanel {
 
     int getCurrentThemeIndex() {
         return currentThemeIndex;
-    }
-
-    private class RepaintTask extends TimerTask {
-        @Override
-        public void run() {
-            repaint();
-        }
     }
 }

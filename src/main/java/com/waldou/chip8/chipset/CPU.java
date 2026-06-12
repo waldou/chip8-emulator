@@ -14,6 +14,7 @@ public class CPU {
     private static final int GENERAL_PURPOSE_REGISTERS = 16;
     private static final int CALL_STACK_SIZE = 16;
     private static final short UNSIGNED_BYTE_MAX_VALUE = 255;
+    private static final int RANDOM_BYTE_VALUES = UNSIGNED_BYTE_MAX_VALUE + 1;
 
     private static final long TIMER_UPDATES_PER_SECOND = 60;
     private static final long TIME_TO_UPDATE_TIMERS_IN_NANOS = ONE_SECOND_IN_NANOS / TIMER_UPDATES_PER_SECOND;
@@ -150,7 +151,7 @@ public class CPU {
             }
             case TYPE_C -> {
                 short vId = getVIdX(opcode);
-                byte random = (byte) rng.nextInt(UNSIGNED_BYTE_MAX_VALUE);
+                byte random = (byte) rng.nextInt(RANDOM_BYTE_VALUES);
                 byte operands = (byte) (opcode & LAST_TWO_OPERANDS_MASK);
 
                 V[vId] = (byte) (random & operands);

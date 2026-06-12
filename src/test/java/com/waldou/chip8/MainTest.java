@@ -97,6 +97,7 @@ class MainTest {
     void shouldLoadProgramAndStartEmulation() {
         try (MockedStatic<Utils> utilsMockedStatic = Mockito.mockStatic(Utils.class);
              MockedStatic<SwingUtilities> swingUtilitiesMockedStatic = Mockito.mockStatic(SwingUtilities.class);
+             MockedConstruction<Graphics> graphicsConstruction = Mockito.mockConstruction(Graphics.class);
              MockedConstruction<RAM> ramConstruction = Mockito.mockConstruction(RAM.class);
              MockedConstruction<Sound> soundConstruction = Mockito.mockConstruction(Sound.class);
              MockedConstruction<CPU> cpuConstruction = Mockito.mockConstruction(CPU.class, (mock, context) -> {
@@ -117,6 +118,7 @@ class MainTest {
             assertEquals(1, ramConstruction.constructed().size());
             assertEquals(1, soundConstruction.constructed().size());
             assertEquals(1, cpuConstruction.constructed().size());
+            verify(graphicsConstruction.constructed().getFirst()).clearScreen();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

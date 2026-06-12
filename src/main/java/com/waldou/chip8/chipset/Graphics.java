@@ -1,25 +1,28 @@
 package com.waldou.chip8.chipset;
 
+import java.util.Arrays;
+
 public class Graphics {
     private static final int SCREEN_WIDTH = 64;
     private static final int SCREEN_HEIGHT = 32;
 
-    private final boolean[][] screen;
+    private final boolean[] screen;
 
     public Graphics() {
-        screen = new boolean[SCREEN_WIDTH][SCREEN_HEIGHT];
+        screen = new boolean[SCREEN_WIDTH * SCREEN_HEIGHT];
     }
 
     boolean drawLine(int x, int y, int currentRow, byte bytes) {
         boolean flippedPixel = false;
         for (int i = 0; i < 8; i++) {
-            int finalX = (x + i) % getScreenWidth();
-            int finalY = (y + currentRow) % getScreenHeight();
+            int finalX = (x + i) % SCREEN_WIDTH;
+            int finalY = (y + currentRow) % SCREEN_HEIGHT;
+            int index = pixelIndex(finalX, finalY);
 
-            boolean prevPixel = getPixel(finalX, finalY);
-            boolean newPixel = prevPixel ^ isBitSet(bytes, 7 - i);
+            boolean prevPixel = screen[index];
+            boolean newPixel = prevPixel ^ ((bytes & (1 << (7 - i))) != 0);
 
-            setPixel(finalX, finalY, newPixel);
+            screen[index] = newPixel;
 
             if (prevPixel && !newPixel) {
                 flippedPixel = true;
@@ -29,11 +32,7 @@ public class Graphics {
     }
 
     public void clearScreen() {
-        for (int i = 0; i < SCREEN_WIDTH; i++) {
-            for (int j = 0; j < SCREEN_HEIGHT; j++) {
-                screen[i][j] = false;
-            }
-        }
+        Arrays.fill(screen, false);
     }
 
     public int getScreenWidth() {
@@ -45,14 +44,10 @@ public class Graphics {
     }
 
     public boolean getPixel(int x, int y) {
-        return screen[x][y];
+        return screen[pixelIndex(x, y)];
     }
 
-    private void setPixel(int x, int y, boolean value) {
-        screen[x][y] = value;
-    }
-
-    private boolean isBitSet(byte bytes, int mask) {
-        return (bytes & (1 << mask)) != 0;
+    private int pixelIndex(int x, int y) {
+        return (y * SCREEN_WIDTH) + x;
     }
 }

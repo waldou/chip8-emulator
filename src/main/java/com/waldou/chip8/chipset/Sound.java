@@ -16,7 +16,7 @@ public class Sound {
     private static final double TO_HZ = 2 * Math.PI;
 
     private boolean enabled = true;
-    private boolean playing = false;
+    private volatile boolean playing = false;
 
     private final Map<Short, byte[]> SOUND_CACHE;
     private AudioFormat af;

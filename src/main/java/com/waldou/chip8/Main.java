@@ -48,8 +48,10 @@ public class Main {
                 CPU cpu = new CPU(ram, graphics, input, currentSound);
                 startEmulation(cpu);
             } catch (Exception e) {
-                stopCurrentSound();
                 started.set(false);
+            } finally {
+                stopCurrentSound();
+                graphics.clearScreen();
             }
         }
     }

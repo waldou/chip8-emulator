@@ -2,8 +2,11 @@ package com.waldou.chip8.chipset;
 
 import com.waldou.chip8.Utils;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CPUTest {
     private static final long CPU_CYCLE_DELTA_TIME = 5_000_000;
@@ -178,6 +182,25 @@ class CPUTest {
         runCycles(cpu, 3);
 
         assertEquals(0x00, ram.readByte((short) 0x300));
+    }
+
+    @Test
+    void shouldUseFullUnsignedByteRangeForRandomOpcode() throws InterruptedException {
+        try (MockedConstruction<Random> randomConstruction = Mockito.mockConstruction(Random.class, (mock, context) -> {
+            when(mock.nextInt(256)).thenReturn(255);
+        })) {
+            RAM ram = new RAM(program(
+                    0xC0FF, // V0 = random & 0xFF
+                    0xA300, // I = 0x300
+                    0xF055  // Store V0 in memory starting at I
+            ));
+            CPU cpu = cpu(ram, new Graphics(), new Input(), mock(Sound.class));
+
+            runCycles(cpu, 3);
+
+            assertEquals(255, Byte.toUnsignedInt(ram.readByte((short) 0x300)));
+            verify(randomConstruction.constructed().getFirst()).nextInt(256);
+        }
     }
 
     @Test
