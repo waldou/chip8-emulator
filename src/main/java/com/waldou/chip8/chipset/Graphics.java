@@ -15,8 +15,8 @@ public class Graphics {
     boolean drawLine(int x, int y, int currentRow, byte bytes) {
         boolean flippedPixel = false;
         for (int i = 0; i < 8; i++) {
-            int finalX = (x + i) % SCREEN_WIDTH;
-            int finalY = (y + currentRow) % SCREEN_HEIGHT;
+            int finalX = Math.floorMod(x + i, SCREEN_WIDTH);
+            int finalY = Math.floorMod(y + currentRow, SCREEN_HEIGHT);
             int index = pixelIndex(finalX, finalY);
 
             boolean prevPixel = screen[index];

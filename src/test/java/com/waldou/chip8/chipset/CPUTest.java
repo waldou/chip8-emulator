@@ -355,6 +355,26 @@ class CPUTest {
     }
 
     @Test
+    void shouldUseUnsignedRegisterValuesForBorrowFlag() throws InterruptedException {
+        assertRegisterOperationResult(0x5, 0xFE, 0x02, 0xFC, 0x01);
+    }
+
+    @Test
+    void shouldUseUnsignedRegisterValuesForReverseBorrowFlag() throws InterruptedException {
+        assertRegisterOperationResult(0x7, 0x02, 0xFE, 0xFC, 0x01);
+    }
+
+    @Test
+    void shouldShiftRightUnsignedRegisterValue() throws InterruptedException {
+        assertRegisterOperationResult(0x6, 0x80, 0x00, 0x40, 0x00);
+    }
+
+    @Test
+    void shouldStoreMostSignificantBitWhenShiftingLeft() throws InterruptedException {
+        assertRegisterOperationResult(0xE, 0x80, 0x00, 0x00, 0x01);
+    }
+
+    @Test
     void shouldLoadRegistersFromMemory() throws InterruptedException {
         RAM ram = new RAM(program(
                 0xA300, // I = 0x300
@@ -408,7 +428,7 @@ class CPUTest {
     @Test
     void shouldStoreBinaryCodedDecimalDigits() throws InterruptedException {
         RAM ram = new RAM(program(
-                0x607B, // V0 = 123
+                0x60FF, // V0 = 255
                 0xA300, // I = 0x300
                 0xF033  // Store BCD of V0 at I..I+2
         ));
@@ -416,9 +436,26 @@ class CPUTest {
 
         runCycles(cpu, 3);
 
-        assertEquals(1, ram.readByte((short) 0x300));
-        assertEquals(2, ram.readByte((short) 0x301));
-        assertEquals(3, ram.readByte((short) 0x302));
+        assertEquals(2, ram.readByte((short) 0x300));
+        assertEquals(5, ram.readByte((short) 0x301));
+        assertEquals(5, ram.readByte((short) 0x302));
+    }
+
+    @Test
+    void shouldDrawSpriteWithUnsignedRegisterCoordinates() throws InterruptedException {
+        RAM ram = new RAM(program(
+                0x60FF, // V0 = 255, wraps to x 63
+                0x61FF, // V1 = 255, wraps to y 31
+                0xA300, // I = 0x300
+                0xD011  // Draw 1-byte sprite at V0,V1
+        ));
+        ram.writeByte((short) 0x300, (byte) 0x80);
+        Graphics graphics = new Graphics();
+        CPU cpu = cpu(ram, graphics, new Input(), mock(Sound.class));
+
+        runCycles(cpu, 4);
+
+        assertTrue(graphics.getPixel(63, 31));
     }
 
     @Test
@@ -460,12 +497,12 @@ class CPUTest {
 
         try (MockedStatic<Utils> utilsMockedStatic = Mockito.mockStatic(Utils.class)) {
             utilsMockedStatic.when(Utils::systemNanoTime)
-                    .thenReturn(0L, 0L, 0L, 4_000_000L);
+                    .thenReturn(0L, 0L, 0L, 2_500_000L);
 
             cpu.cycle(1);
             cpu.cycle(1);
 
-            utilsMockedStatic.verify(() -> Utils.threadSleep(4));
+            utilsMockedStatic.verify(() -> Utils.threadSleep(2));
         }
     }
 

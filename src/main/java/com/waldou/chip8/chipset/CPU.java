@@ -9,7 +9,7 @@ import static com.waldou.chip8.chipset.OpcodeConstants.*;
 
 public class CPU {
     private static final long ONE_SECOND_IN_NANOS = 1_000_000_000;
-    private static final long OPCODES_PER_SECOND = 250;
+    private static final long OPCODES_PER_SECOND = 400;
     private static final long OPCODES_SLICE = ONE_SECOND_IN_NANOS / OPCODES_PER_SECOND;
     private static final int GENERAL_PURPOSE_REGISTERS = 16;
     private static final int CALL_STACK_SIZE = 16;
@@ -159,7 +159,7 @@ public class CPU {
                 I = (short) (opcode & ALL_OPERANDS_MASK);
             case TYPE_B -> {
                 short operand = (short) (opcode & ALL_OPERANDS_MASK);
-                programCounter = (short) (V[0] + operand);
+                programCounter = (short) (unsigned(V[0]) + operand);
             }
             case TYPE_C -> {
                 short vId = getVIdX(opcode);
@@ -169,8 +169,8 @@ public class CPU {
                 V[vId] = (byte) (random & operands);
             }
             case TYPE_D -> {
-                short x = V[getVIdX(opcode)];
-                short y = V[getVIdY(opcode)];
+                short x = (short) unsigned(V[getVIdX(opcode)]);
+                short y = (short) unsigned(V[getVIdY(opcode)]);
                 short height = (short) (opcode & THIRD_OPERAND_MASK);
                 V[0xF] = 0;
                 for (int row = 0; row < height; row++) {
@@ -217,21 +217,22 @@ public class CPU {
                 V[vIdX] = (byte) (result & LAST_TWO_OPERANDS_MASK);
             }
             case 0x5 -> {
-                V[0xF] = (byte) ((V[vIdX] > V[vIdY]) ? 1 : 0);
+                V[0xF] = (byte) ((unsigned(V[vIdX]) > unsigned(V[vIdY])) ? 1 : 0);
                 V[vIdX] = (byte) (V[vIdX] - V[vIdY]);
             }
             case 0x6 -> {
-                byte lsb = (byte) (V[vIdX] & 0x0001);
+                int value = unsigned(V[vIdX]);
+                byte lsb = (byte) (value & 0x0001);
                 V[0xF] = lsb;
-                V[vIdX] = (byte) (V[vIdX] >> 1);
+                V[vIdX] = (byte) (value >> 1);
             }
             case 0x7 -> {
-                V[0xF] = (byte) ((V[vIdY] > V[vIdX]) ? 1 : 0);
+                V[0xF] = (byte) ((unsigned(V[vIdY]) > unsigned(V[vIdX])) ? 1 : 0);
                 V[vIdX] = (byte) (V[vIdY] - V[vIdX]);
             }
             case 0xE -> {
-                byte msb = (byte) (V[vIdX] & 0x8000);
-                V[0xF] = msb;
+                int value = unsigned(V[vIdX]);
+                V[0xF] = (byte) ((value & 0x80) >> 7);
                 V[vIdX] = (byte) (V[vIdX] << 1);
             }
             default -> throw invalidOpcodeException(opcode);
@@ -246,13 +247,14 @@ public class CPU {
             case 0x000A -> V[vIdX] = input.waitForKey();
             case 0x0015 -> delayTimer = V[vIdX];
             case 0x0018 -> soundTimer = V[vIdX];
-            case 0x001E -> I += V[vIdX];
+            case 0x001E -> I += (short) unsigned(V[vIdX]);
             case 0x0029 -> I = ram.getFontLocation(V[vIdX]);
             case 0x0033 -> {
                 // Based on http://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
-                byte first = (byte) (V[vIdX] / 100);
-                byte second = (byte) ((V[vIdX] / 10) % 10);
-                byte third = (byte) ((V[vIdX] % 100) % 10);
+                int value = unsigned(V[vIdX]);
+                byte first = (byte) (value / 100);
+                byte second = (byte) ((value / 10) % 10);
+                byte third = (byte) (value % 10);
                 ram.writeByte(I, first);
                 ram.writeByte((short) (I + 1), second);
                 ram.writeByte((short) (I + 2), third);
@@ -298,6 +300,10 @@ public class CPU {
 
     private short getVIdY(short opcode) {
         return (short) ((opcode & SECOND_OPERAND_MASK) >> SECOND_OPERAND_SHIFT);
+    }
+
+    private int unsigned(byte value) {
+        return Byte.toUnsignedInt(value);
     }
 
     private IllegalStateException invalidOpcodeException(short opcode) {
