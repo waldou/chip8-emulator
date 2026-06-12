@@ -92,6 +92,8 @@ public class CPU {
                     graphics.clearScreen();
                 } else if (OPCODE_RETURN == opcode) {
                     programCounter = callStack[--stackPointer];
+                } else {
+                    throw invalidOpcodeException(opcode);
                 }
                 break;
             }
@@ -189,13 +191,15 @@ public class CPU {
                     programCounter += (short) ((input.isKeyPressed(key)) ? 0x0002 : 0);
                 } else if (KEY_EVENT_NOT_PRESSED == keyEvent) {
                     programCounter += (short) ((!input.isKeyPressed(key)) ? 0x0002 : 0);
+                } else {
+                    throw invalidOpcodeException(opcode);
                 }
                 break;
             case TYPE_F:
                 executeOperationsTypeF(opcode);
                 break;
             default:
-                throw new IllegalStateException("Invalid opcode found: " + opcode);
+                throw invalidOpcodeException(opcode);
         }
     }
 
@@ -251,6 +255,8 @@ public class CPU {
                 V[vIdX] = (byte) (V[vIdX] << 1);
                 break;
             }
+            default:
+                throw invalidOpcodeException(opcode);
         }
     }
 
@@ -304,6 +310,8 @@ public class CPU {
                 }
                 break;
             }
+            default:
+                throw invalidOpcodeException(opcode);
         }
     }
 
@@ -334,5 +342,9 @@ public class CPU {
 
     private short getVIdY(short opcode) {
         return (short) ((opcode & SECOND_OPERAND_MASK) >> SECOND_OPERAND_SHIFT);
+    }
+
+    private IllegalStateException invalidOpcodeException(short opcode) {
+        return new IllegalStateException("Invalid opcode found: " + String.format("0x%04X", opcode));
     }
 }
