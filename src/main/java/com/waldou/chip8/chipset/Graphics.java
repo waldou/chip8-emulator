@@ -4,7 +4,7 @@ public class Graphics {
     private static final int SCREEN_WIDTH = 64;
     private static final int SCREEN_HEIGHT = 32;
 
-    private boolean[][] screen;
+    private final boolean[][] screen;
 
     public Graphics() {
         screen = new boolean[SCREEN_WIDTH][SCREEN_HEIGHT];

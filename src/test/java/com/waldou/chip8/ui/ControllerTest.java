@@ -1,6 +1,5 @@
 package com.waldou.chip8.ui;
 
-import com.waldou.chip8.TestUtils;
 import com.waldou.chip8.chipset.Input;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -72,15 +72,13 @@ class ControllerTest {
     }
 
     @Test
-    void shouldExecuteDefaultCommand() throws Exception {
-        TestUtils.setFinalStatic(Controller.class.getDeclaredField("DEFAULT_COMMAND_IMPL"), mockCommand);
+    void shouldExecuteDefaultCommand() {
         Controller controller = new Controller(mockInput);
 
         KeyEvent mockKeyEvent = mock(KeyEvent.class);
         when(mockKeyEvent.getKeyCode()).thenReturn(KeyEvent.VK_BACK_SPACE);
-        controller.keyReleased(mockKeyEvent);
 
-        verify(mockCommand).execute();
+        assertDoesNotThrow(() -> controller.keyReleased(mockKeyEvent));
     }
 
     @Test

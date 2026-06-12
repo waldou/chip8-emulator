@@ -2,14 +2,14 @@ package com.waldou.chip8.ui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class Screen extends JPanel {
     public static final Color[] CLASSIC_THEME = {Color.BLACK, Color.WHITE};
     public static final Color[] PIPBOY_THEME = {new Color(55, 59, 53), new Color(89, 255, 101)};
-    private static final java.util.List<Color[]> THEMES = Arrays.asList(PIPBOY_THEME, CLASSIC_THEME);
+    private static final List<Color[]> THEMES = List.of(PIPBOY_THEME, CLASSIC_THEME);
 
     private static final long REFRESH_RATE = 1000 / 60;
     private static final int PIXEL_SIZE = 10;

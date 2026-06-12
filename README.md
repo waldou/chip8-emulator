@@ -5,7 +5,7 @@ My attempt to create a CHIP-8 emulator.
 
 ### Requirements
 
-- Java 11.
+- Java 25.
 
 ### How to run
 

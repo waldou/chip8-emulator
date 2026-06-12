@@ -4,7 +4,7 @@ import com.waldou.chip8.Utils;
 
 public class Input {
     private static final int KEYS = 16;
-    private boolean[] keys;
+    private final boolean[] keys;
 
     public Input() {
         keys = new boolean[KEYS];

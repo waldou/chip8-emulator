@@ -1,16 +1,15 @@
 package com.waldou.chip8;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Utils {
     private Utils() {
     }
 
     public static byte[] readFile(String filename) throws IOException {
-        File file = new File(filename);
-        return Files.readAllBytes(file.toPath());
+        return Files.readAllBytes(Path.of(filename));
     }
 
     public static boolean isEmpty(String str) {

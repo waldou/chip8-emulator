@@ -2,6 +2,7 @@ package com.waldou.chip8;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -17,12 +18,13 @@ import static org.mockito.Mockito.when;
 class UtilsTest {
     @Test
     void shouldReturnFileBytes() throws IOException {
-        Mockito.mockStatic(Files.class);
-        when(Files.readAllBytes(any(Path.class))).thenReturn("hello".getBytes());
+        try (MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
+            filesMockedStatic.when(() -> Files.readAllBytes(any(Path.class))).thenReturn("hello".getBytes());
 
-        byte[] bytes = Utils.readFile("dummy.txt");
+            byte[] bytes = Utils.readFile("dummy.txt");
 
-        assertEquals("hello", new String(bytes));
+            assertEquals("hello", new String(bytes));
+        }
     }
 
     @Test

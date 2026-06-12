@@ -3,12 +3,22 @@ plugins {
     id 'jacoco'
 }
 
-group 'com.waldou.chip8'
-version '1.0-SNAPSHOT'
+group = 'com.waldou.chip8'
+version = '1.0-SNAPSHOT'
+
+jacoco {
+    toolVersion = '0.8.15'
+}
 
 compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
 repositories {
@@ -16,18 +26,19 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.7.0'
-    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
 
-    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.awaitility:awaitility:4.3.0'
 }
 
 test {
     maxHeapSize = "2048m"
     useJUnitPlatform()
+    jvmArgs '-Xshare:off'
 }
 
 jacocoTestReport {
@@ -61,9 +72,7 @@ jacocoTestCoverageVerification {
 }
 
 tasks.register('coverage') {
-    dependsOn 'clean'
     dependsOn 'jacocoTestReport'
-    jacocoTestReport.mustRunAfter 'clean'
 }
 
 jar {
